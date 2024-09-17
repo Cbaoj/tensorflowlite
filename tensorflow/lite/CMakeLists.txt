@@ -302,6 +302,8 @@ populate_tflite_source_vars("core/kernels" TFLITE_CORE_KERNELS_SRCS)
 populate_tflite_source_vars("core/tools" TFLITE_CORE_TOOLS_SRCS)
 populate_tflite_source_vars("c" TFLITE_C_SRCS)
 populate_tflite_source_vars("delegates" TFLITE_DELEGATES_SRCS)
+populate_tflite_source_vars("delegates/utils" TFLITE_DELEGATES_UTILS_SRCS)
+populate_tflite_source_vars("async" TFLITE_ASYNC_SRCS)
 if(TFLITE_ENABLE_GPU)
   find_package(opencl_headers REQUIRED)
   find_package(vulkan_headers REQUIRED)
@@ -368,6 +370,8 @@ if(TFLITE_ENABLE_GPU)
     ${TFLITE_SOURCE_DIR}/delegates/gpu/api.cc
     ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate.cc
     ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate.h
+    ${TFLITE_SOURCE_DIR}/delegates/gpu/async_buffers.h
+    ${TFLITE_SOURCE_DIR}/delegates/gpu/async_buffers.cc
     ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate_options.cc
     ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate_options.h
     ${TFLITE_SOURCE_DIR}/delegates/gpu/tflite_profile.cc
@@ -386,7 +390,19 @@ if(TFLITE_ENABLE_GPU)
     ${TFLITE_DELEGATES_GPU_COMMON_TRANSFORMATIONS_SRCS}
     ${TFLITE_SOURCE_DIR}/tools/versioning/gpu_compatibility.cc
     ${TFLITE_SOURCE_DIR}/tools/versioning/op_signature.cc
+    ${TFLITE_SOURCE_DIR}/delegates/gpu/gl/gl_errors.cc
+    ${TFLITE_SOURCE_DIR}/delegates/gpu/gl/egl_environment.cc
+    ${TFLITE_SOURCE_DIR}/delegates/gpu/gl/egl_context.cc
+    ${TFLITE_SOURCE_DIR}/delegates/gpu/gl/egl_surface.cc
+    ${TFLITE_SOURCE_DIR}/delegates/gpu/gl/request_gpu_info.cc
   )
+  if(CMAKE_SYSTEM_NAME MATCHES "Android")
+    list(APPEND TFLITE_DELEGATES_GPU_SRCS
+      ${TFLITE_SOURCE_DIR}/delegates/gpu/android_hardware_buffer.cc
+      ${TFLITE_SOURCE_DIR}/delegates/gpu/android_version.cc
+      ${TFLITE_SOURCE_DIR}/delegates/gpu/gl/android_sync.cc
+    )
+  endif()
   include_directories(
     AFTER
     ${TFLITE_SOURCE_DIR}/delegates/gpu/common
@@ -473,7 +489,7 @@ if(TFLITE_ENABLE_GPU)
      target_link_libraries(${lib_name})
    endforeach()
 endif()
-  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11")
+  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11" "-DTF_LITE_DISABLE_X86_NEON")
   list(APPEND TFLITE_TARGET_DEPENDENCIES
     absl::any
     absl::flat_hash_map
@@ -650,6 +666,8 @@ set(_ALL_TFLITE_SRCS
   ${TFLITE_DELEGATES_GPU_SRCS}
   ${TFLITE_DELEGATES_NNAPI_SRCS}
   ${TFLITE_DELEGATES_SRCS}
+  ${TFLITE_DELEGATES_UTILS_SRCS}
+  ${TFLITE_ASYNC_SRCS}
   ${TFLITE_DELEGATES_EXTERNAL_SRCS}
   ${TFLITE_EXPERIMENTAL_REMAT_SRCS}
   ${TFLITE_EXPERIMENTAL_RESOURCE_SRCS}

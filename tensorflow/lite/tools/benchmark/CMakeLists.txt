@@ -52,6 +52,8 @@ list(APPEND TFLITE_BENCHMARK_LIBS
   example_proto
   model_runtime_info_proto
   protobuf::libprotobuf
+  EGL
+  GLESv2
 )
 
 # TODO(b/171007016): Enable performance options on Windows.
