@@ -25,6 +25,7 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/common/precision.h"
 #include "tensorflow/lite/delegates/gpu/common/status.h"
 #include "tensorflow/lite/delegates/gpu/common/task/tensor_desc.h"
+#include "tensorflow/lite/tools/logging.h"
 
 namespace tflite {
 namespace gpu {
@@ -128,6 +129,15 @@ absl::Status Environment::Init() {
       GetDevicePtr()->DisableOneLayerTextureArray();
     }
   }
+#ifdef TFLITE_ENABLE_ONEDNN
+/* take openvino/src/plugins/intel_gpu/src/runtime/ocl/ocl_engine.cpp as reference */
+   is_onednn_initialized = false;
+   onednn_engine_ = dnnl::ocl_interop::make_engine(device().id(), context().context());
+   onednn_stream_ = dnnl::ocl_interop::make_stream(onednn_engine_, queue()->queue());
+   is_onednn_initialized = true;
+   TFLITE_LOG(INFO) << "onednn initialized";
+#endif
+
   return absl::OkStatus();
 }
 

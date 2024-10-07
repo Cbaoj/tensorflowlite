@@ -574,6 +574,7 @@ if(TFLITE_ENABLE_EXTERNAL_DELEGATE)
     FILTER ".*(_test|_tester)\\.(cc|h)"
   )
 endif()
+
 populate_tflite_source_vars("experimental/remat"
   TFLITE_EXPERIMENTAL_REMAT_SRCS
   FILTER ".*_test\\.(cc|h)$"
@@ -745,6 +746,13 @@ target_link_libraries(tensorflow-lite
 
 if (NOT BUILD_SHARED_LIBS)
   list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFL_STATIC_LIBRARY_BUILD")
+endif()
+
+if(TFLITE_ENABLE_ONEDNN)
+  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_ENABLE_ONEDNN")
+  target_include_directories(tensorflow-lite PRIVATE "/usr/local/include")
+  link_directories("/usr/local/lib")
+  target_link_libraries(tensorflow-lite PRIVATE "libdnnl.so")
 endif()
 
 target_compile_options(tensorflow-lite

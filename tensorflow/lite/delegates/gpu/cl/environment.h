@@ -27,6 +27,11 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/common/task/tensor_desc.h"
 #include "tensorflow/lite/delegates/gpu/common/tensor.h"
 
+#ifdef TFLITE_ENABLE_ONEDNN
+#include "oneapi/dnnl/dnnl.hpp"
+#include "oneapi/dnnl/dnnl_ocl.hpp"
+#endif
+
 namespace tflite {
 namespace gpu {
 namespace cl {
@@ -73,6 +78,11 @@ class Environment {
   CLCommandQueue queue_;
   ProfilingCommandQueue profiling_queue_;
   ProgramCache program_cache_;
+#ifdef TFLITE_ENABLE_ONEDNN
+  dnnl::engine onednn_engine_;
+  dnnl::stream onednn_stream_;
+  bool is_onednn_initialized;
+#endif
 };
 
 TensorStorageType GetFastestStorageType(const GpuInfo& gpu_info);
