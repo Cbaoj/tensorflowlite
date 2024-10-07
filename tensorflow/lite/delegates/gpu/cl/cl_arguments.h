@@ -55,7 +55,9 @@ class CLArguments : public ArgumentsBinder {
   // Compares Int, Float, Half names to values mapping with the mapping in
   // `other` and returns true if they are the same.
   bool HasEqualScalarArguments(const CLArguments& other) const;
-
+#ifdef TFLITE_ENABLE_ONEDNN
+  cl_mem get_clmem_buffer(const std::string name);
+#endif
  private:
   absl::Status AllocateObjects(const Arguments& args, CLContext* context);
   absl::Status AddObjectArgs(const GpuInfo& gpu_info, const Arguments& args);

@@ -188,6 +188,10 @@ absl::Status CreateVectorCopyData(const TfLiteTensor& src, T* dst) {
   }
 }
 
+#ifdef TFLITE_ENABLE_ONEDNN
+template <>
+absl::Status CreateVectorCopyData<uint16_t>(const TfLiteTensor& src, uint16_t* dst);
+#endif
 template <>
 absl::Status CreateVectorCopyData<float>(const TfLiteTensor& src, float* dst);
 

@@ -53,6 +53,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/tools/versioning/gpu_compatibility.h"
 #include "tensorflow/lite/util.h"
+#include "tensorflow/lite/tools/logging.h"
 
 namespace tflite {
 namespace gpu {
@@ -701,6 +702,7 @@ class Conv2DOperationParser : public TFLiteOperationParser {
         node->operation.attributes = std::move(attr);
         RETURN_IF_ERROR(reader->AddInput(node, 0));
         RETURN_IF_ERROR(reader->AddOutputs(node));
+        TFLITE_LOG(INFO) << "convolution_2d " << node->id << " src shape " << ToString(src_shape) << " dst shape " << ToString(dst_shape) << " weight shape " << ToString(attr.weights.shape);
         RETURN_IF_ERROR(
             MaybeFuseActivation(tf_options->activation, graph, node));
         return absl::OkStatus();

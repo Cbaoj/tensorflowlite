@@ -37,6 +37,7 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/cl/cl_device.h"
 #include "tensorflow/lite/delegates/gpu/cl/cl_event.h"
 #include "tensorflow/lite/delegates/gpu/cl/cl_operation.h"
+#include "tensorflow/lite/delegates/gpu/cl/create_context.h"
 #include "tensorflow/lite/delegates/gpu/cl/opencl_wrapper.h"
 #include "tensorflow/lite/delegates/gpu/cl/serialization_generated.h"
 #include "tensorflow/lite/delegates/gpu/common/data_type.h"
@@ -51,6 +52,7 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/common/task/tensor_desc.h"
 #include "tensorflow/lite/delegates/gpu/common/types.h"
 #include "tensorflow/lite/delegates/gpu/common/util.h"
+#include "tensorflow/lite/tools/logging.h"
 
 namespace tflite {
 namespace gpu {
@@ -121,23 +123,27 @@ void GetUsages(const GpuModel& model,
   for (const auto& in_id : model.input_ids_and_refs) {
     if (functor(in_id.first)) {
       AddUsage(in_id.first, 0, usages);
+      //std::cout << "model input " << in_id.first << std::endl;
     }
   }
   for (int op_index = 0; op_index < model.nodes.size(); ++op_index) {
     for (auto input_id : model.nodes[op_index].inputs) {
       if (functor(input_id)) {
         AddUsage(input_id, op_index, usages);
+        //std::cout << "node " << op_index << " input_id " << input_id << std::endl;
       }
     }
     for (auto output_id : model.nodes[op_index].outputs) {
       if (functor(output_id)) {
         AddUsage(output_id, op_index, usages);
+        //std::cout << "node " << op_index << " output_id " << output_id << std::endl;
       }
     }
   }
   for (const auto& out_id : model.output_ids_and_refs) {
     if (functor(out_id.first)) {
       AddUsage(out_id.first, model.nodes.size(), usages);
+      //std::cout << "model output " << out_id.first << std::endl;
     }
   }
 }
@@ -330,6 +336,9 @@ absl::Status InferenceContext::InitFromGpuModel(
   creation_context.context = &env->context();
   creation_context.queue = env->queue();
   creation_context.cache = env->program_cache();
+#ifdef TFLITE_ENABLE_ONEDNN
+  creation_context.dnn_engine = env->GetDnnEngine();
+#endif
   for (const auto& external_tensor : create_info.external_immutable_tensors) {
     auto* cl_spatial_tensor = dynamic_cast<Tensor*>(external_tensor.second);
     if (!cl_spatial_tensor) {
@@ -754,6 +763,7 @@ void InferenceContext::BindMemoryToOperations() {
 absl::Status InferenceContext::Compile(
     const CreationContext& creation_context) {
   for (auto& node : nodes_) {
+    TFLITE_LOG(INFO) << "node: " << node.name;
     RETURN_IF_ERROR(node.cl_operation.Compile(creation_context));
   }
   return absl::OkStatus();

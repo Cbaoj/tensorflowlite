@@ -272,10 +272,13 @@ struct Convolution2DAttributes {
   HW strides = HW(1, 1);    // Along each axis.
   HW dilations = HW(1, 1);  // Along each axis.
   Padding2D padding;
-
+#if 0//def TFLITE_ENABLE_ONEDNN  //I cannot change this, lots of other code hard code weights as FLOAT32
+  Tensor<OHWI, DataType::UINT16> weights; //for float16
+  Tensor<Linear, DataType::UINT16> bias;  // optional
+#else
   Tensor<OHWI, DataType::FLOAT32> weights;
   Tensor<Linear, DataType::FLOAT32> bias;  // optional
-
+#endif
   int groups = 1;  // optional, split channels dimension on equal groups
   // Restrictions:
   // src.Channels() and dst.Channels() must be divisible by groups

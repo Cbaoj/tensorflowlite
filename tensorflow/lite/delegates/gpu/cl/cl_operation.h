@@ -30,20 +30,15 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/cl/cl_kernel.h"
 #include "tensorflow/lite/delegates/gpu/cl/program_cache.h"
 #include "tensorflow/lite/delegates/gpu/cl/tensor.h"
+#include "tensorflow/lite/delegates/gpu/cl/create_context.h"
 #include "tensorflow/lite/delegates/gpu/common/task/gpu_operation.h"
+#ifdef TFLITE_ENABLE_ONEDNN
+#include "oneapi/dnnl/dnnl.hpp"
+#endif
 
 namespace tflite {
 namespace gpu {
 namespace cl {
-
-struct CreationContext {
-  const CLDevice* device;
-  CLContext* context;
-  CLCommandQueue* queue;
-  ProgramCache* cache;
-
-  const GpuInfo& GetGpuInfo() const { return device->info_; }
-};
 
 class ClOperation {
  public:
@@ -70,6 +65,12 @@ class ClOperation {
   absl::Status SetDstTensor(int index, Tensor* tensor);
 
   absl::Status AddToQueue(CLCommandQueue* queue) {
+#ifdef TFLITE_ENABLE_ONEDNN
+    if(operation_->is_dnn_algorithm_valid()) {
+      operation_->AddToQueue(queue);
+      return absl::OkStatus();
+    }
+#endif
     RETURN_IF_ERROR(cl_args_.Bind(kernel_.kernel()));
     return queue->Dispatch(kernel_, operation_->GetWorkGroupsCount(),
                            operation_->work_group_size_);

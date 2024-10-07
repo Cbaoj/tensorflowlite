@@ -126,6 +126,11 @@ std::string GetCommonOpenCLDefines(CalculationsPrecision precision) {
 }  // namespace
 
 absl::Status ClOperation::UpdateParams() {
+#ifdef TFLITE_ENABLE_ONEDNN
+  if(operation_->is_dnn_algorithm_valid()) {
+    return absl::OkStatus();
+  }
+#endif
   for (int i = 0; i < operation_->GetSrcTensorsNames().size(); ++i) {
     const auto* cl_spatial_tensor =
         dynamic_cast<const Tensor*>(operation_->GetSrcTensors()[i]);
@@ -161,12 +166,24 @@ absl::Status ClOperation::SetDstTensor(int index, Tensor* tensor) {
 }
 
 absl::Status ClOperation::Compile(const CreationContext& creation_context) {
-  operation_->code_ =
+#ifdef TFLITE_ENABLE_ONEDNN
+  if(!operation_->is_dnn_algorithm_valid())
+    operation_->code_ =
       GetCommonOpenCLDefines(operation_->GetPrecision()) + operation_->code_;
+  //cl_args are where weights, bias etc get allocated and uploaded
+#endif
   RETURN_IF_ERROR(cl_args_.Init(creation_context.GetGpuInfo(),
                                 creation_context.context, &operation_->args_,
                                 &operation_->code_));
   operation_->args_.ReleaseCPURepresentation();
+#ifdef TFLITE_ENABLE_ONEDNN
+  //at this point, all arg memories are allocated, 
+  //input, output and intermediate tensors are allocated in AllocateMemory.
+  //weights, const etc are in above cl_args_.Init
+  if(operation_->is_dnn_algorithm_valid()) {
+    return operation_->prepare_dnn_kernel(creation_context, cl_args_);
+  }
+#endif
   if (creation_context.device->info_.opencl_info.IsCLVK()) {
     operation_->compiler_options_.push_back(
         CompilerOptions::kClFastRelaxedMath);
@@ -194,6 +211,11 @@ absl::Status ClOperation::RestoreDeserialized(const ProgramCache& program_cache,
 
 absl::Status ClOperation::Tune(TuningType tuning_type, const GpuInfo& gpu_info,
                                ProfilingCommandQueue* profiling_queue) {
+#ifdef TFLITE_ENABLE_ONEDNN
+  if (operation_->is_dnn_algorithm_valid()) {
+    return absl::OkStatus();
+  }
+#endif
   std::vector<GPUOperation::DispatchInfo> possible_dispatches;
   operation_->GetPossibleDispatches(tuning_type, gpu_info, kernel_.info_,
                                     &possible_dispatches);

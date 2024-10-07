@@ -44,6 +44,7 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/common/task/tensor_desc.h"
 #include "tensorflow/lite/delegates/gpu/common/tensor.h"
 #include "tensorflow/lite/delegates/gpu/tflite_profile.h"
+#include "tensorflow/lite/tools/logging.h"
 
 #ifdef CL_DELEGATE_ALLOW_GL
 #include <EGL/eglext.h>
@@ -708,6 +709,12 @@ CreateGpuModelInfo GetCreateInfo(const Environment& environment,
     create_info.hints.Add(ModelHints::kNoWinogradOptimizations);
     create_info.hints.Add(ModelHints::kReuseConvWeights);
   }
+#ifdef TFLITE_ENABLE_ONEDNN
+  if(environment.IsDnnInitialized()) {
+    TFLITE_LOG(INFO) << "Turn off Winograd";
+    create_info.hints.Add(ModelHints::kNoWinogradOptimizations);
+  }
+#endif
   return create_info;
 }
 
