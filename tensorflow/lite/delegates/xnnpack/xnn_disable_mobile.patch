@@ -1,0 +1,26 @@
+From 304088df3ef065bb84f0c6aa9b2b6f499d8cb609 Mon Sep 17 00:00:00 2001
+From: JeevakaPrabu <jeevaka.badrappan@intel.com>
+Date: Mon, 7 Oct 2024 05:13:07 +0000
+Subject: [PATCH] xnn disable mobile
+
+Signed-off-by: JeevakaPrabu <jeevaka.badrappan@intel.com>
+---
+ src/xnnpack/common.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/xnnpack/common.h b/src/xnnpack/common.h
+index 7f8078b55..60297ef07 100644
+--- a/src/xnnpack/common.h
++++ b/src/xnnpack/common.h
+@@ -106,7 +106,7 @@
+
+ // Mobile build x86 versions for debugging
+ #if XNN_PLATFORM_ANDROID || XNN_PLATFORM_IOS
+-  #define XNN_PLATFORM_MOBILE 1
++  #define XNN_PLATFORM_MOBILE 0
+ #else
+   #define XNN_PLATFORM_MOBILE 0
+ #endif
+--
+2.34.1
+

@@ -150,6 +150,7 @@ def _tf_repositories():
     # LINT.IfChange
     tf_http_archive(
         name = "XNNPACK",
+        patch_file = ["//tensorflow/lite/delegates/xnnpack:xnn_disable_mobile.patch"],
         sha256 = "f66213a4d66991b2a44400f95fcd260adf6f4f7077956cdf7fce2571d6164d5e",
         strip_prefix = "XNNPACK-6b83f69d4938da4dc9ad63c00bd13e9695659a51",
         urls = tf_mirror_urls("https://github.com/google/XNNPACK/archive/6b83f69d4938da4dc9ad63c00bd13e9695659a51.zip"),
