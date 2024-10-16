@@ -62,6 +62,7 @@ limitations under the License.
 #include "tensorflow/lite/tools/logging.h"
 #include "tensorflow/lite/tools/model_loader.h"
 #include "tensorflow/lite/tools/utils.h"
+#include "tensorflow/lite/experimental/genai/genai_ops.h"
 
 void RegisterSelectedOps(::tflite::MutableOpResolver* resolver);
 
@@ -69,7 +70,9 @@ void RegisterSelectedOps(::tflite::MutableOpResolver* resolver);
 // library with another definition of this function (presumably to actually
 // register custom ops), that version will be used instead.
 void ABSL_ATTRIBUTE_WEAK
-RegisterSelectedOps(::tflite::MutableOpResolver* resolver) {}
+RegisterSelectedOps(::tflite::MutableOpResolver* resolver) {
+  tflite::ops::custom::GenAIOpsRegisterer(resolver);
+}
 
 namespace tflite {
 namespace benchmark {

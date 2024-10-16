@@ -16,16 +16,20 @@ limitations under the License.
 #include "tensorflow/lite/experimental/genai/genai_ops.h"
 
 #include "tensorflow/lite/mutable_op_resolver.h"
+#include <iostream>
 
 namespace tflite {
 namespace ops {
 namespace custom {
 
 extern "C" void GenAIOpsRegisterer(::tflite::MutableOpResolver* resolver) {
+  std::cout << "Register odml.update_kv_cache" << std::endl;
   resolver->AddCustom("odml.update_kv_cache",
                       tflite::ops::custom::Register_KV_CACHE());
+  std::cout << "Register odml.scaled_dot_product_attention" << std::endl;
   resolver->AddCustom("odml.scaled_dot_product_attention",
                       tflite::ops::custom::Register_SDPA());
+  std::cout << "Register odml.update_external_kv_cache" << std::endl;
   resolver->AddCustom("odml.update_external_kv_cache",
                       tflite::ops::custom::Register_EXTERNAL_KV_CACHE());
 }
