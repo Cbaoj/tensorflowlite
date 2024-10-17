@@ -181,6 +181,7 @@ cc_library(
         "//tensorflow/lite/tools:utils",
         "//tensorflow/lite/tools/delegates:delegate_provider_hdr",
         "//tensorflow/lite/tools/delegates:tflite_execution_providers",
+        "//tensorflow/lite/experimental/genai:genai_ops",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",

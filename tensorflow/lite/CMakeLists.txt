@@ -376,6 +376,10 @@ if(TFLITE_ENABLE_GPU)
     ${TFLITE_SOURCE_DIR}/delegates/gpu/delegate_options.h
     ${TFLITE_SOURCE_DIR}/delegates/gpu/tflite_profile.cc
     ${TFLITE_SOURCE_DIR}/experimental/acceleration/compatibility/android_info.cc
+    ${TFLITE_SOURCE_DIR}/experimental/genai/genai_ops.cc
+    ${TFLITE_SOURCE_DIR}/experimental/genai/external_kvcache.cc
+    ${TFLITE_SOURCE_DIR}/experimental/genai/kvcache.cc
+    ${TFLITE_SOURCE_DIR}/experimental/genai/sdpa.cc
     ${TFLITE_DELEGATES_GPU_CL_SRCS}
     ${TFLITE_DELEGATES_GPU_CL_DEFAULT_SRCS}
     ${TFLITE_DELEGATES_GPU_CL_KERNELS_SRCS}
