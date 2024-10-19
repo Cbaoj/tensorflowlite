@@ -255,31 +255,6 @@ void ConvertFloat16ToFloat32(size_t num_elements, const uint16_t* src,
   }
 }
 
-#ifdef TFLITE_ENABLE_ONEDNN
-void ConvertFloat32ToFloat16(size_t num_elements, const float* src,
-                             uint16_t* dst) {
-  for (size_t i = 0; i < num_elements; i++) {
-    *dst++ = fp16_ieee_from_fp32_value(*src++);
-  }
-}
-
-template <>
-absl::Status CreateVectorCopyData<uint16_t>(const TfLiteTensor& src, uint16_t* dst) {
-  switch (src.type) {
-    case kTfLiteFloat32:
-      ConvertFloat32ToFloat16(NumElements(&src),
-                              reinterpret_cast<float const*>(src.data.f),
-                              dst);
-      return absl::OkStatus();
-    case kTfLiteFloat16:
-      std::memcpy(dst, src.data.f, src.bytes);
-      return absl::OkStatus();
-    default:
-      return absl::InvalidArgumentError(
-          "Unsupported data type for float32 tensor");
-  }
-}
-#endif
 template <>
 absl::Status CreateVectorCopyData<float>(const TfLiteTensor& src, float* dst) {
   switch (src.type) {

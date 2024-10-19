@@ -27,11 +27,6 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/common/task/tensor_desc.h"
 #include "tensorflow/lite/delegates/gpu/common/tensor.h"
 
-#ifdef TFLITE_ENABLE_ONEDNN
-#include "oneapi/dnnl/dnnl.hpp"
-#include "oneapi/dnnl/dnnl_ocl.hpp"
-#endif
-
 namespace tflite {
 namespace gpu {
 namespace cl {
@@ -56,10 +51,6 @@ class Environment {
   ProfilingCommandQueue* profiling_queue() { return &profiling_queue_; }
   ProgramCache* program_cache() { return &program_cache_; }
   const ProgramCache* program_cache() const { return &program_cache_; }
-#ifdef TFLITE_ENABLE_ONEDNN
-  const bool IsDnnInitialized() const { return is_dnn_initialized_; }
-  const dnnl::engine* GetDnnEngine() const { return &dnn_engine_; }
-#endif
 
   std::vector<CalculationsPrecision> GetSupportedPrecisions() const;
   bool IsSupported(CalculationsPrecision precision) const;
@@ -75,16 +66,13 @@ class Environment {
   void SetHighPerformance() const;
   void SetDefaultPerformance() const;
   void SetLowPerformance() const;  // for energy saving
+
  private:
   CLDevice device_;
   CLContext context_;
   CLCommandQueue queue_;
   ProfilingCommandQueue profiling_queue_;
   ProgramCache program_cache_;
-#ifdef TFLITE_ENABLE_ONEDNN
-  dnnl::engine dnn_engine_;
-  bool is_dnn_initialized_;
-#endif
 };
 
 TensorStorageType GetFastestStorageType(const GpuInfo& gpu_info);

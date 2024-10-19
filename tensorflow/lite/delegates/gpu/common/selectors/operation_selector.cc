@@ -514,7 +514,7 @@ absl::Status GPUOperationFromNodePart0(
           }
           if (!shared_conv_weights || attr.weights.id == -1) {
             *gpu_op =
-                SelectConvolution(attr, input_shape, output_shape, gpu_info, op_def, hints);
+                SelectConvolution(attr, output_shape, gpu_info, op_def, hints);
           } else {
             // Using convolutions with shared weights
             WeightsDescription weights_desc;
@@ -682,13 +682,7 @@ absl::Status GPUOperationFromNodePart0(
     }
     case OperationType::RELU: {
       auto attr = absl::any_cast<ReLUAttributes>(node.operation.attributes);
-#ifdef TFLITE_ENABLE_ONEDNN
-      OperationDef temp_def = op_def;
-      temp_def.dnn_op_alg  = dnnl::algorithm::eltwise_relu;
-      *gpu_op = SelectReLU(attr, temp_def);
-#else
       *gpu_op = SelectReLU(attr, op_def);
-#endif
       return absl::OkStatus();
     }
     case OperationType::RESAMPLER: {

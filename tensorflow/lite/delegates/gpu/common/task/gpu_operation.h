@@ -33,14 +33,6 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/common/task/tensor_desc.h"
 #include "tensorflow/lite/delegates/gpu/common/task/tuning_type.h"
 #include "tensorflow/lite/delegates/gpu/common/types.h"
-#include "tensorflow/lite/delegates/gpu/cl/create_context.h"
-
-#ifdef TFLITE_ENABLE_ONEDNN
-#include "tensorflow/lite/delegates/gpu/cl/cl_command_queue.h"
-#include "tensorflow/lite/delegates/gpu/cl/cl_arguments.h"
-#include "tensorflow/lite/delegates/gpu/cl/cl_command_queue.h"`
-#include "oneapi/dnnl/dnnl.hpp"
-#endif
 
 namespace tflite {
 namespace gpu {
@@ -82,9 +74,6 @@ struct OperationDef {
   DataType GetPrimaryDataType() const;
   TensorStorageType GetPrimaryStorageType() const;
   bool IsBatchSupported() const;
-#ifdef TFLITE_ENABLE_ONEDNN
-  dnnl::algorithm dnn_op_alg = dnnl::algorithm::undef;
-#endif
 };
 
 struct ElementwiseDescriptor {
@@ -103,7 +92,7 @@ class GPUOperation {
   GPUOperation(const GPUOperation&) = delete;
   GPUOperation& operator=(const GPUOperation&) = delete;
 
-  virtual absl::Status AddOperation(const GpuInfo& gpu_info, GPUOperation* operation);
+  absl::Status AddOperation(const GpuInfo& gpu_info, GPUOperation* operation);
 
   int GetElementwiseInputsCount() const { return elementwise_inputs_; }
 
@@ -128,18 +117,11 @@ class GPUOperation {
   const std::vector<GpuSpatialTensor*>& GetDstTensors() const { return dst_; }
   const int3& GetWorkGroupsCount() const { return work_groups_count_; }
 
-  virtual absl::Status AssembleCode(const GpuInfo& gpu_info);
+  absl::Status AssembleCode(const GpuInfo& gpu_info);
 
   const OperationDef& GetDefinition() const { return definition_; }
   CalculationsPrecision GetPrecision() const { return definition_.precision; }
-#ifdef TFLITE_ENABLE_ONEDNN
-  const bool is_dnn_algorithm_valid() const { return definition_.dnn_op_alg != dnnl::algorithm::undef; }
-  const dnnl::algorithm get_dnn_algorithm() const { return definition_.dnn_op_alg; }
-  virtual absl::Status prepare_dnn_kernel(const cl::CreationContext& creation_context, cl::CLArguments &cl_args) { return absl::OkStatus(); }
-  //virtual std::unordered_map<int, dnnl::memory> get_arguments() { return std::unordered_map<int, dnnl::memory>(); }
-  //virtual dnnl::primitive* get_primitive() { return nullptr; }
-  virtual absl::Status AddToQueue(cl::CLCommandQueue* queue) { return absl::OkStatus(); }
-#endif
+
   void AddSrcTensor(const std::string& tensor_name,
                     const TensorDescriptor& desc);
   void AddSrcBuffer(const std::string& buffer_name,

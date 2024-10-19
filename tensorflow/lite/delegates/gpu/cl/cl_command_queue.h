@@ -28,10 +28,6 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/common/status.h"
 #include "tensorflow/lite/delegates/gpu/common/task/profiling_info.h"
 #include "tensorflow/lite/delegates/gpu/common/types.h"
-#ifdef TFLITE_ENABLE_ONEDNN
-#include "oneapi/dnnl/dnnl.hpp"
-#include "oneapi/dnnl/dnnl_ocl.hpp"
-#endif
 
 namespace tflite {
 namespace gpu {
@@ -52,11 +48,6 @@ class CLCommandQueue {
   virtual ~CLCommandQueue();
 
   cl_command_queue queue() const { return queue_; }
-
-#ifdef TFLITE_ENABLE_ONEDNN
-  void set_dnn_stream(std::shared_ptr<dnnl::stream> dnn_stream) { dnn_stream_ = dnn_stream;}
-  std::shared_ptr<dnnl::stream> get_dnn_stream() const { return dnn_stream_; }
-#endif
 
   virtual absl::Status Dispatch(const CLKernel& kernel,
                                 const int3& work_groups_count,
@@ -83,9 +74,6 @@ class CLCommandQueue {
   void Release();
 
   cl_command_queue queue_ = nullptr;
-#ifdef TFLITE_ENABLE_ONEDNN
-  std::shared_ptr<dnnl::stream> dnn_stream_ = nullptr;
-#endif
   bool has_ownership_ = false;
 };
 

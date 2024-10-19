@@ -630,13 +630,6 @@ bool CLArguments::HasEqualScalarArguments(const CLArguments& other) const {
           other.half_values_ == half_values_);
 }
 
-#ifdef TFLITE_ENABLE_ONEDNN
-cl_mem CLArguments::get_clmem_buffer(const std::string name)
-{
-  return buffers_[name].memory;
-}
-#endif
-
 }  // namespace cl
 }  // namespace gpu
 }  // namespace tflite

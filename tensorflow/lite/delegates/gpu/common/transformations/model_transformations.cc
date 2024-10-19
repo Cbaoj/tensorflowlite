@@ -36,11 +36,8 @@ namespace {
 bool ApplyGeneralTransformations(ModelTransformer* transformer) {
   // whenever any of these transforms return false, that means that a graph
   // is in the broken state and processing should not continue.
-  return
-#ifndef TFLITE_ENABLE_ONEDNN
-         transformer->Apply("add_quant_adjustments",
+  return transformer->Apply("add_quant_adjustments",
                             NewAddQuantAdjustments().get()) &&
-#endif
          transformer->Apply("remove_degenerate_upsampling",
                             NewRemoveDegenerateUpsampling().get()) &&
          transformer->Apply("remove_single_input_add",

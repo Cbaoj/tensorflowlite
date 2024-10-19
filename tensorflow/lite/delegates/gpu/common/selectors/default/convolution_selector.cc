@@ -25,9 +25,6 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/common/task/weights_layout.h"
 #include "tensorflow/lite/delegates/gpu/common/tasks/conv_constants.h"
 #include "tensorflow/lite/delegates/gpu/common/tasks/conv_generic.h"
-#ifdef TFLITE_ENABLE_ONEDNN
-#include "tensorflow/lite/delegates/gpu/common/tasks/conv_onednn.h"
-#endif
 #include "tensorflow/lite/delegates/gpu/common/tasks/conv_metal_simd.h"
 #include "tensorflow/lite/delegates/gpu/common/tasks/conv_weights_converter.h"
 
@@ -76,37 +73,16 @@ std::unique_ptr<GPUOperation> SelectConvolutionApple(
   }
 }
 
-#ifdef TFLITE_ENABLE_ONEDNN
-std::unique_ptr<GPUOperation> SelectConvolutionIntel(
-    const Convolution2DAttributes& attr, const BHWC& src_shape, const BHWC& dst_shape,
-    const GpuInfo& gpu_info, const OperationDef& op_def) {
-  //skip unsupported cases, this is the place where it can switch back to default path by if(true)
-  //however there's still one difference, onednn path has ModelHints::kNoWinogradOptimizations set (winograd turns off), see api.cc
-  //if(true) {
-  if(op_def.src_tensors.size() > 1) {
-    ConvGeneric conv = CreateConvGeneric(gpu_info, op_def, attr, &dst_shape);
-    return std::make_unique<ConvGeneric>(std::move(conv));
-  }
-  OperationDef conv_temp_def = op_def;
-  conv_temp_def.dnn_op_alg = dnnl::algorithm::convolution_direct;
-  ConvOneDNN conv = CreateConvOneDNN(gpu_info, conv_temp_def, attr, &src_shape, &dst_shape);
-  return std::make_unique<ConvOneDNN>(std::move(conv));
-}
-#endif
 }  // namespace
 
 std::unique_ptr<GPUOperation> SelectConvolution(
-    const Convolution2DAttributes& attr, const BHWC& src_shape, const BHWC& dst_shape,
+    const Convolution2DAttributes& attr, const BHWC& dst_shape,
     const GpuInfo& gpu_info, const OperationDef& op_def,
     ModelHints hints) {
   if (gpu_info.IsApple()) {
     return SelectConvolutionApple(attr, dst_shape, gpu_info, op_def);
   } else if (gpu_info.IsAdreno()) {
     return SelectConvolutionAdreno(attr, dst_shape, gpu_info, op_def, hints);
-#ifdef TFLITE_ENABLE_ONEDNN
-  } else if (gpu_info.IsIntel()) {
-    return SelectConvolutionIntel(attr, src_shape, dst_shape, gpu_info, op_def);
-#endif
   } else if (gpu_info.IsPowerVR() || gpu_info.IsAMD() || gpu_info.IsIntel() ||
              gpu_info.IsApple() || gpu_info.IsMali()) {
     ConvGeneric conv = CreateConvGeneric(gpu_info, op_def, attr, &dst_shape);

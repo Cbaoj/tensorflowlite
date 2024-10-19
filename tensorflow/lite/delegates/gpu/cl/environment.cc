@@ -25,7 +25,6 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/common/precision.h"
 #include "tensorflow/lite/delegates/gpu/common/status.h"
 #include "tensorflow/lite/delegates/gpu/common/task/tensor_desc.h"
-#include "tensorflow/lite/tools/logging.h"
 
 namespace tflite {
 namespace gpu {
@@ -47,6 +46,7 @@ absl::Status CreateEnvironment(Environment* result, bool shared,
   RETURN_IF_ERROR(CreateCLCommandQueue(gpu, context, &queue));
   ProfilingCommandQueue profiling_queue;
   RETURN_IF_ERROR(CreateProfilingCommandQueue(gpu, context, &profiling_queue));
+
   *result = Environment(std::move(gpu), std::move(context), std::move(queue),
                         std::move(profiling_queue));
 
@@ -128,18 +128,6 @@ absl::Status Environment::Init() {
       GetDevicePtr()->DisableOneLayerTextureArray();
     }
   }
-#ifdef TFLITE_ENABLE_ONEDNN
-/* take openvino/src/plugins/intel_gpu/src/runtime/ocl/ocl_engine.cpp as reference */
-   is_dnn_initialized_ = false;
-   dnn_engine_ = dnnl::ocl_interop::make_engine(device_.id(), context_.context());
-   std::shared_ptr<dnnl::stream> dnn_stream = std::make_shared<dnnl::stream>(dnnl::ocl_interop::make_stream(dnn_engine_, queue_.queue()));
-   std::shared_ptr<dnnl::stream> profiling_dnn_stream = std::make_shared<dnnl::stream>(dnnl::ocl_interop::make_stream(dnn_engine_, profiling_queue_.queue()));
-   queue_.set_dnn_stream(dnn_stream);
-   profiling_queue_.set_dnn_stream(profiling_dnn_stream);
-   is_dnn_initialized_ = true;
-   TFLITE_LOG(INFO) << "onednn initialized";
-#endif
-
   return absl::OkStatus();
 }
 
@@ -293,11 +281,11 @@ absl::Status CreateEnvironment(Environment* result) {
 
   CLContext context;
   RETURN_IF_ERROR(CreateCLContext(gpu, &context));
-
   CLCommandQueue queue;
   RETURN_IF_ERROR(CreateCLCommandQueue(gpu, context, &queue));
   ProfilingCommandQueue profiling_queue;
   RETURN_IF_ERROR(CreateProfilingCommandQueue(gpu, context, &profiling_queue));
+
   *result = Environment(std::move(gpu), std::move(context), std::move(queue),
                         std::move(profiling_queue));
   return result->Init();

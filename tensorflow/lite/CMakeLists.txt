@@ -74,7 +74,7 @@ option(TFLITE_ENABLE_GPU "Enable GPU" OFF)
 option(TFLITE_ENABLE_METAL "Enable Metal delegate (iOS only)" OFF)
 option(TFLITE_ENABLE_XNNPACK "Enable XNNPACK backend" ON)
 option(TFLITE_ENABLE_EXTERNAL_DELEGATE "Enable External Delegate backend" ON)
-option(TFLITE_ENABLE_ONEDNN "Enable oneDNN" OFF)
+
 option(TFLITE_KERNEL_TEST "Enable tflite kernel unit test" OFF)
 
 if(${CMAKE_CROSSCOMPILING})
@@ -493,7 +493,7 @@ if(TFLITE_ENABLE_GPU)
      target_link_libraries(${lib_name})
    endforeach()
 endif()
-  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DCL_DELEGATE_NO_GL" "-DEGL_NO_X11" "-DTF_LITE_DISABLE_X86_NEON")
+  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DEGL_NO_X11" "-DTF_LITE_DISABLE_X86_NEON" "-DCL_DELEGATE_NO_GL")
   list(APPEND TFLITE_TARGET_DEPENDENCIES
     absl::any
     absl::flat_hash_map
@@ -578,7 +578,6 @@ if(TFLITE_ENABLE_EXTERNAL_DELEGATE)
     FILTER ".*(_test|_tester)\\.(cc|h)"
   )
 endif()
-
 populate_tflite_source_vars("experimental/remat"
   TFLITE_EXPERIMENTAL_REMAT_SRCS
   FILTER ".*_test\\.(cc|h)$"
@@ -750,13 +749,6 @@ target_link_libraries(tensorflow-lite
 
 if (NOT BUILD_SHARED_LIBS)
   list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFL_STATIC_LIBRARY_BUILD")
-endif()
-
-if(TFLITE_ENABLE_ONEDNN)
-  list(APPEND TFLITE_TARGET_PUBLIC_OPTIONS "-DTFLITE_ENABLE_ONEDNN")
-  target_include_directories(tensorflow-lite PRIVATE "/usr/local/include")
-  link_directories("/usr/local/lib")
-  target_link_libraries(tensorflow-lite PRIVATE "libdnnl.so")
 endif()
 
 target_compile_options(tensorflow-lite
