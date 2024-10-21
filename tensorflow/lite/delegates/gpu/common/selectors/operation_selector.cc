@@ -56,6 +56,9 @@ namespace {
 bool IsRecommendedForWinograd4x4To6x6(const Convolution2DAttributes& attr,
                                       const GpuInfo& gpu_info,
                                       const BHWC& dst_shape) {
+  if(gpu_info.IsIntel()) {
+    return false;
+  }
   const int tiles_x = DivideRoundUp(dst_shape.w, 4);
   const int tiles_y = DivideRoundUp(dst_shape.h, 4);
   const int total_tiles = tiles_x * tiles_y;
